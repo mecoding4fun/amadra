@@ -8,25 +8,44 @@ import 'package:firebase_auth/firebase_auth.dart';
 void main(){
   runApp(
     MaterialApp(
-      home:LoginPage(),
+      home:SignUp(),
     )
   );
 }
 
-class LoginPage extends StatefulWidget{
+class SignUp extends StatefulWidget{
   @override
-  State<LoginPage> createState() => LoginPageState();
+  State<SignUp> createState() => SignUpState();
 }
 
-class LoginPageState extends State<LoginPage>{
+class SignUpState extends State<SignUp>{
    final formKey = GlobalKey<FormState>();
 
   final TextEditingController EMcontroller = TextEditingController();
   final TextEditingController PAcontroller = TextEditingController();
+  final TextEditingController NAcontroller = TextEditingController();
+  final TextEditingController Ucontroller = TextEditingController();
 
-  Future<void> login() async {
+  Future<void> signup() async {
     try{
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: EMcontroller.text.trim(), password: PAcontroller.text.trim());
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: EMcontroller.text.trim(),
+          password: PAcontroller.text.trim()
+        );
+
+        User? user =userCredential.user;
+        if(user!=null){
+          String uid= user.uid;
+          await FirebaseFirestore.instance.collection("users").doc(uid).set({
+            "uid":uid,
+            "name":NAcontroller.text.trim(),
+            "username":Ucontroller.text.trim(),
+            "email":EMcontroller.text.trim(),
+            "bio":"",
+            "profilePic":"",
+            "createdAt": FieldValue.serverTimestamp()
+          });
+        }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => BottomAppDem()),
@@ -65,7 +84,19 @@ class LoginPageState extends State<LoginPage>{
               children: [
                 SizedBox(height: 75),
                 Image.asset('assets/amadra.png', width: 300,height: 300),
-                Text("Login",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold)),
+                Text("Sign Up",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold)),
+                TextFormField(
+                  controller: NAcontroller,
+                  decoration: const InputDecoration(labelText: "Name"),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? "Enter Name" : null,
+                ),
+                TextFormField(
+                  controller: Ucontroller,
+                  decoration: const InputDecoration(labelText: "Username"),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? "Enter Username" : null,
+                ),
                 TextFormField(
                   controller: EMcontroller,
                   decoration: const InputDecoration(labelText: "Email"),
@@ -83,10 +114,10 @@ class LoginPageState extends State<LoginPage>{
                 ElevatedButton(
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
-                      await login();
+                      await signup();
                     }
                   },
-                  child: const Text("Submit"),
+                  child: const Text("Sign up"),
                 ),
               ],
             ),

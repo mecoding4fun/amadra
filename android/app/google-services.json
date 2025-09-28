@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "705876620420",
-    "firebase_url": "https://amadra-8c9bf-default-rtdb.firebaseio.com",
-    "project_id": "amadra-8c9bf",
-    "storage_bucket": "amadra-8c9bf.firebasestorage.app"
+    "project_number": "276745983249",
+    "project_id": "databasehandler-e2f44",
+    "storage_bucket": "databasehandler-e2f44.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:705876620420:android:2051dc23f49155f4c3bed1",
+        "mobilesdk_app_id": "1:276745983249:android:50edf4f42bfb8d1f5528b0",
         "android_client_info": {
           "package_name": "com.ram.blog"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCgcGP-zLaADBUymgeizTBwtrKFXwPQUms"
+          "current_key": "AIzaSyBFEuzcEtdSsTqeY2LNeQepqAkY1nHVDWw"
         }
       ],
       "services": {

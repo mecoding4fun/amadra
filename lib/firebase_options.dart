@@ -41,53 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDS-Ew_xWYItAZ-M8SsYeGmDnkWMtFWBtc',
-    appId: '1:705876620420:web:6b8d775db538dbcdc3bed1',
-    messagingSenderId: '705876620420',
-    projectId: 'amadra-8c9bf',
-    authDomain: 'amadra-8c9bf.firebaseapp.com',
-    databaseURL: 'https://amadra-8c9bf-default-rtdb.firebaseio.com',
-    storageBucket: 'amadra-8c9bf.firebasestorage.app',
-    measurementId: 'G-8PSE91XKMK',
+    apiKey: 'AIzaSyA6aCuUmjypTz9xSAB530UXdjuInADMKTI',
+    appId: '1:276745983249:web:748dfefbd5691abe5528b0',
+    messagingSenderId: '276745983249',
+    projectId: 'databasehandler-e2f44',
+    authDomain: 'databasehandler-e2f44.firebaseapp.com',
+    storageBucket: 'databasehandler-e2f44.firebasestorage.app',
+    measurementId: 'G-7T6YQJQYDN',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCgcGP-zLaADBUymgeizTBwtrKFXwPQUms',
-    appId: '1:705876620420:android:2051dc23f49155f4c3bed1',
-    messagingSenderId: '705876620420',
-    projectId: 'amadra-8c9bf',
-    databaseURL: 'https://amadra-8c9bf-default-rtdb.firebaseio.com',
-    storageBucket: 'amadra-8c9bf.firebasestorage.app',
+    apiKey: 'AIzaSyBFEuzcEtdSsTqeY2LNeQepqAkY1nHVDWw',
+    appId: '1:276745983249:android:50edf4f42bfb8d1f5528b0',
+    messagingSenderId: '276745983249',
+    projectId: 'databasehandler-e2f44',
+    storageBucket: 'databasehandler-e2f44.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDP3B8n41YaJJAMaDrDRCD7U6mQ3uJNK-w',
-    appId: '1:705876620420:ios:3d04aa432c33c689c3bed1',
-    messagingSenderId: '705876620420',
-    projectId: 'amadra-8c9bf',
-    databaseURL: 'https://amadra-8c9bf-default-rtdb.firebaseio.com',
-    storageBucket: 'amadra-8c9bf.firebasestorage.app',
+    apiKey: 'AIzaSyD9H8qVa-YwgcEy2PQp3DU4-eO9hGJmX7o',
+    appId: '1:276745983249:ios:495d8ac1eb166ca25528b0',
+    messagingSenderId: '276745983249',
+    projectId: 'databasehandler-e2f44',
+    storageBucket: 'databasehandler-e2f44.firebasestorage.app',
     iosBundleId: 'com.example.flutterApplication2',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDP3B8n41YaJJAMaDrDRCD7U6mQ3uJNK-w',
-    appId: '1:705876620420:ios:3d04aa432c33c689c3bed1',
-    messagingSenderId: '705876620420',
-    projectId: 'amadra-8c9bf',
-    databaseURL: 'https://amadra-8c9bf-default-rtdb.firebaseio.com',
-    storageBucket: 'amadra-8c9bf.firebasestorage.app',
+    apiKey: 'AIzaSyD9H8qVa-YwgcEy2PQp3DU4-eO9hGJmX7o',
+    appId: '1:276745983249:ios:495d8ac1eb166ca25528b0',
+    messagingSenderId: '276745983249',
+    projectId: 'databasehandler-e2f44',
+    storageBucket: 'databasehandler-e2f44.firebasestorage.app',
     iosBundleId: 'com.example.flutterApplication2',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDS-Ew_xWYItAZ-M8SsYeGmDnkWMtFWBtc',
-    appId: '1:705876620420:web:6b8d775db538dbcdc3bed1',
-    messagingSenderId: '705876620420',
-    projectId: 'amadra-8c9bf',
-    authDomain: 'amadra-8c9bf.firebaseapp.com',
-    databaseURL: 'https://amadra-8c9bf-default-rtdb.firebaseio.com',
-    storageBucket: 'amadra-8c9bf.firebasestorage.app',
-    measurementId: 'G-8PSE91XKMK',
+    apiKey: 'AIzaSyBSlHgWZJyLQKGkm_FSoCcDfHHMOl8twkk',
+    appId: '1:276745983249:web:7dc56fffc922b3da5528b0',
+    messagingSenderId: '276745983249',
+    projectId: 'databasehandler-e2f44',
+    authDomain: 'databasehandler-e2f44.firebaseapp.com',
+    storageBucket: 'databasehandler-e2f44.firebasestorage.app',
+    measurementId: 'G-YQR233GP3N',
   );
 }
