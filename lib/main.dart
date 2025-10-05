@@ -1,19 +1,14 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
-import 'dart:io';
 import 'package:AMADRA/launcher.dart';
-import 'package:AMADRA/login.dart';
-import 'package:AMADRA/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabaseLib;
-import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'Home.dart';
 import 'profile.dart';
-import 'sw.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> saveDeviceToken(String uid) async {
