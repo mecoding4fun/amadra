@@ -16,12 +16,36 @@ class CreatePostPage extends StatefulWidget {
   State<CreatePostPage> createState()=> Cpstate();
 }
 class Cpstate extends State<CreatePostPage>{
+  bool isPosting = false;
   final formKey = GlobalKey<FormState>();
 
   final TextEditingController Headcontroller = TextEditingController();
   final TextEditingController Bodycontroller = TextEditingController();
 
+  String? community;
+
+Future<void> comms()async{
+    try{
+      final user = FirebaseAuth.instance.currentUser;
+      if(user==null) return;
+      final doc = await FirebaseFirestore.instance
+                                         .collection('users')
+                                         .doc(user.uid)
+                                         .get();
+      
+      setState(() {
+        community = doc['community'];
+      });
+    }
+    catch(e){
+      print("Error: $e");
+    }
+  }
 Future<void> createpost()async{
+  if(isPosting) return;
+  setState(() {
+    isPosting=true;
+  });
   try{
     final user = FirebaseAuth.instance.currentUser;
     if(user==null) return;
@@ -35,13 +59,27 @@ Future<void> createpost()async{
     "heading":Headcontroller.text.trim(),
     "content":Bodycontroller.text.trim(),
     "uid": FirebaseAuth.instance.currentUser!.uid.trim(),
-    "timestamp":FieldValue.serverTimestamp()
+    "timestamp":FieldValue.serverTimestamp(),
+    "community":community
   });
+
+    if(mounted){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BottomAppDem()));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post created successfully")));
+    }
   }
   catch(e){
-    print(e);
+    setState(() {
+      isPosting=false;
+    });
   }
 }
+
+  @override
+  void initState(){
+    super.initState();
+    comms();
+  }
 
 
   @override
@@ -72,17 +110,11 @@ Future<void> createpost()async{
                 const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () async {
-                      if (formKey.currentState!.validate()) {
-                        await createpost();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Post created successfully")),
-                        );
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BottomAppDem()));
-                      }
-                    },
-                    child: const Text("Post"),
-                  ),
+                      onPressed: isPosting ? null : createpost,
+                      child: isPosting
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text("Create"),
+        ),
                 ),
               ],
             ),

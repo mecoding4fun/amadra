@@ -88,11 +88,73 @@ class LoginPageState extends State<LoginPage>{
                   },
                   child: const Text("Submit"),
                 ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPassword()));
+                  },
+                  child: Text("Forgot Password?", style: TextStyle(decoration: TextDecoration.underline),)
+                )
               ],
             ),
           ),
         ),
       )
+    );
+  }
+}
+
+class ForgotPassword extends StatefulWidget{
+  @override
+  State<ForgotPassword> createState() => FpState();
+}
+
+class FpState extends State<ForgotPassword>{
+  final formKey = GlobalKey<FpState>();
+  final TextEditingController EMcontroller = TextEditingController();
+
+ 
+
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(title: Text("Reset Password")),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                Text("Reset password"),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: EMcontroller,
+                  decoration: const InputDecoration(labelText: "Email"),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? "Enter email" : null,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: ()async{
+                    try{
+                      await FirebaseAuth.instance.sendPasswordResetEmail(email: EMcontroller.text.trim());
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginPage()));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Password reset mail sent!")),
+                        );
+                    }
+                    catch(e){
+                      print(e);
+                    }
+                  }, 
+                  child: Text("Reset")
+                )
+              ],
+            )
+          ),
+        ),
+      ),
     );
   }
 }

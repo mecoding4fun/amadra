@@ -1,108 +1,128 @@
 import 'dart:io';
-
-import 'package:AMADRA/Todo.dart';
 import 'package:AMADRA/login.dart';
+import 'package:AMADRA/profileUpdate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
 
 class Profile extends StatefulWidget {
   @override
-  State<Profile> createState() => ProfileState();
+  State<Profile> createState() => _ProfileState();
 }
 
-class ProfileState extends State<Profile> {
-  String? _profilePicPath;
+class _ProfileState extends State<Profile> {
   String username = '';
   String name = '';
   String email = '';
   String bio = '';
+  String comms = '';
+  String? _profileUrl;
 
   @override
   void initState() {
     super.initState();
-    _loadProfilePic();
     fetch();
   }
 
   Future<void> fetch() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      final userDoc =
-          await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+    final userDoc =
+        await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
 
-      setState(() {
-        username = userDoc.data()?['username'] ?? '';
-        name = userDoc.data()?['name'] ?? '';
-        email = userDoc.data()?['email'] ?? '';
-        bio = userDoc.data()?['bio']??'';
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
+    final data = userDoc.data();
+    if (data == null) return;
 
-  Future<void> _loadProfilePic() async {
-    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _profilePicPath = prefs.getString('profilePicPath');
+      username = data['username'] ?? '';
+      name = data['name'] ?? '';
+      email = data['email'] ?? '';
+      bio = data['bio'] ?? '';
+      _profileUrl = data['profilePic'] ?? '';
+      comms = data['community'];
     });
   }
 
-  Future<void> _pickAndSaveProfilePic() async {
+  Future<void> _pickAndUploadProfilePic() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
 
-    if (pickedFile != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('profilePicPath', pickedFile.path);
+    final file = File(pickedFile.path);
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final fileName = '$userId/profile.jpg';
+
+    try {
+      await supabase.storage.from('profile_pics').upload(
+        fileName,
+        file,
+        fileOptions: FileOptions(upsert: true),
+      );
+
+      final url = supabase.storage.from('profile_pics').getPublicUrl(fileName);
 
       setState(() {
-        _profilePicPath = pickedFile.path;
+        _profileUrl = url;
       });
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'profilePic': url});
+    } catch (e) {
+      print('Supabase upload error: $e');
     }
   }
 
-  Future<void> logout()async{
+  Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginPage()));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginPage()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileUpdate()));
+          }, 
+          icon: Icon(Icons.edit)
+        ),
         title: Text("Profile"),
         centerTitle: true,
         elevation: 0,
-        actions: [IconButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context)=>AlertDialog(
-                title: Text("Logout?"),
-                actions: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton(
-                        onPressed: (){logout();},
-                        child: Text("Yes")
-                      ),
-                      ElevatedButton(
-                        onPressed: (){Navigator.pop(context);},
-                        child: Text("No")
-                      ),
-                    ],
-                  )
-                ],
-              ));
-            },
-            icon: Icon(Icons.logout))],
+        actions: [
+          IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          title: Text("Logout?"),
+                          actions: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ElevatedButton(
+                                    onPressed: logout, child: Text("Yes")),
+                                ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("No")),
+                              ],
+                            )
+                          ],
+                        ));
+              },
+              icon: Icon(Icons.logout))
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -110,14 +130,14 @@ class ProfileState extends State<Profile> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: _pickAndSaveProfilePic,
+                onTap: _pickAndUploadProfilePic,
                 child: CircleAvatar(
                   radius: 60,
                   backgroundColor: Colors.grey[300],
-                  backgroundImage: _profilePicPath != null
-                      ? FileImage(File(_profilePicPath!))
+                  backgroundImage: _profileUrl != null && _profileUrl!.isNotEmpty
+                      ? NetworkImage(_profileUrl!)
                       : null,
-                  child: _profilePicPath == null
+                  child: _profileUrl == null || _profileUrl!.isEmpty
                       ? Icon(Icons.account_circle,
                           size: 120, color: Colors.grey[600])
                       : null,
@@ -132,6 +152,11 @@ class ProfileState extends State<Profile> {
               Text(
                 username.isNotEmpty ? "@$username" : "@username",
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 6),
+              Text(
+                '#$comms',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
               ),
               SizedBox(height: 20),
               Card(

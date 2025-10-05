@@ -31,6 +31,23 @@
 
   <title>flutter_application_2</title>
   <link rel="manifest" href="manifest.json">
+  <!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBSlHgWZJyLQKGkm_FSoCcDfHHMOl8twkk",
+    authDomain: "databasehandler-e2f44.firebaseapp.com",
+    projectId: "databasehandler-e2f44",
+    storageBucket: "databasehandler-e2f44.firebasestorage.app",
+    messagingSenderId: "276745983249",
+    appId: "1:276745983249:web:7dc56fffc922b3da5528b0",
+    measurementId: "G-YQR233GP3N"
+  };
+
+  const app = initializeApp(firebaseConfig);
+</script>
+
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
