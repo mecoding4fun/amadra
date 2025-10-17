@@ -19,7 +19,7 @@ class _ProfileState extends State<Profile> {
   String name = '';
   String email = '';
   String bio = '';
-  String comms = '';
+  List<String> comms = [];
   String? _profileUrl;
 
   @override
@@ -32,20 +32,31 @@ class _ProfileState extends State<Profile> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userDoc =
-        await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
 
-    final data = userDoc.data();
-    if (data == null) return;
+      final data = userDoc.data();
+      if (data == null) return;
 
-    setState(() {
-      username = data['username'] ?? '';
-      name = data['name'] ?? '';
-      email = data['email'] ?? '';
-      bio = data['bio'] ?? '';
-      _profileUrl = data['profilePic'] ?? '';
-      comms = data['community'];
-    });
+      final List<dynamic>? comdata = data['communities'];
+      final List<String> commList = comdata != null && comdata.isNotEmpty
+          ? List<String>.from(comdata)
+          : ['common'];
+
+      setState(() {
+        username = data['username'] ?? '';
+        name = data['name'] ?? '';
+        email = data['email'] ?? '';
+        bio = data['bio'] ?? '';
+        _profileUrl = data['profilePic'] ?? '';
+        comms = commList;
+      });
+    } catch (e) {
+      print("Error fetching profile: $e");
+    }
   }
 
   Future<void> _pickAndUploadProfilePic() async {
@@ -59,10 +70,10 @@ class _ProfileState extends State<Profile> {
 
     try {
       await supabase.storage.from('profile_pics').upload(
-        fileName,
-        file,
-        fileOptions: FileOptions(upsert: true),
-      );
+            fileName,
+            file,
+            fileOptions: FileOptions(upsert: true),
+          );
 
       final url = supabase.storage.from('profile_pics').getPublicUrl(fileName);
 
@@ -85,16 +96,40 @@ class _ProfileState extends State<Profile> {
         context, MaterialPageRoute(builder: (context) => LoginPage()));
   }
 
+  Future<void> fetchUserCommunities() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+        final List<dynamic>? data = userDoc.data()?['communities'];
+        if (data != null && data.isNotEmpty) {
+          setState(() {
+            comms = List<String>.from(data);
+          });
+        } else {
+          setState(() {
+            comms = ['common']; // default
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching communities: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileUpdate()));
-          }, 
-          icon: Icon(Icons.edit)
-        ),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ProfileUpdate()));
+            },
+            icon: Icon(Icons.edit)),
         title: Text("Profile"),
         centerTitle: true,
         elevation: 0,
@@ -125,7 +160,12 @@ class _ProfileState extends State<Profile> {
         ],
       ),
       body: Center(
+          child: RefreshIndicator(
+        onRefresh: () async {
+          await fetch();
+        },
         child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -134,9 +174,10 @@ class _ProfileState extends State<Profile> {
                 child: CircleAvatar(
                   radius: 60,
                   backgroundColor: Colors.grey[300],
-                  backgroundImage: _profileUrl != null && _profileUrl!.isNotEmpty
-                      ? NetworkImage(_profileUrl!)
-                      : null,
+                  backgroundImage:
+                      _profileUrl != null && _profileUrl!.isNotEmpty
+                          ? NetworkImage(_profileUrl!)
+                          : null,
                   child: _profileUrl == null || _profileUrl!.isEmpty
                       ? Icon(Icons.account_circle,
                           size: 120, color: Colors.grey[600])
@@ -154,9 +195,38 @@ class _ProfileState extends State<Profile> {
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
               SizedBox(height: 6),
-              Text(
-                '#$comms',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  // Deduplicate comms for display
+                  Builder(
+                    builder: (context) {
+                      final uniqueComms = comms.where((c) => c.trim().isNotEmpty).toSet().toList();
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: uniqueComms.map((c) {
+                          return Chip(
+                            label: Text(
+                              c,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            backgroundColor: Colors.deepPurple.withOpacity(0.15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ],
               ),
               SizedBox(height: 20),
               Card(
@@ -165,7 +235,7 @@ class _ProfileState extends State<Profile> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  leading: Icon(Icons.person, color: Colors.blueGrey),
+                  leading: Icon(Icons.person, color: Colors.deepPurple),
                   title: Text(
                     username.isNotEmpty ? username : "No username",
                     style: TextStyle(fontSize: 16),
@@ -178,7 +248,7 @@ class _ProfileState extends State<Profile> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  leading: Icon(Icons.email, color: Colors.blueGrey),
+                  leading: Icon(Icons.email, color: Colors.deepPurple),
                   title: Text(
                     email.isNotEmpty ? email : "Email not set",
                     style: TextStyle(fontSize: 16),
@@ -191,7 +261,7 @@ class _ProfileState extends State<Profile> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  leading: Icon(Icons.info, color: Colors.blueGrey),
+                  leading: Icon(Icons.info, color: Colors.deepPurple),
                   title: Text(
                     bio.isNotEmpty ? bio : "",
                     style: TextStyle(fontSize: 16),
@@ -201,7 +271,7 @@ class _ProfileState extends State<Profile> {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 }

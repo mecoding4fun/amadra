@@ -25,12 +25,12 @@ class TodoScreenState extends State<TodoScreen> {
   @override
   void initState() {
     super.initState();
-    loadTodos(); 
+    loadTodos();
   }
 
   Future<void> saveTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    String encoded = jsonEncode(todos); 
+    String encoded = jsonEncode(todos);
     await prefs.setString("todos", encoded);
   }
 
@@ -72,6 +72,7 @@ class TodoScreenState extends State<TodoScreen> {
     });
     saveTodos(); // save after delete
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,10 +96,12 @@ class TodoScreenState extends State<TodoScreen> {
                 SizedBox(height: 20),
                 DropdownButton<String>(
                   value: priority,
-                  items: ["High","Medium","Low"].map((p)=>DropdownMenuItem(value: p, child: Text(p))).toList(),
-                  onChanged: (val){
+                  items: ["High", "Medium", "Low"]
+                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                      .toList(),
+                  onChanged: (val) {
                     setState(() {
-                      priority=val!;
+                      priority = val!;
                     });
                   },
                 ),

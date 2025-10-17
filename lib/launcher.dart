@@ -28,7 +28,7 @@ class _LauncherState extends State<launcher> {
               children: [
                 Image.asset(
                   'assets/amadra.png',
-                  height: 200, // optional: limit image height
+                  height: 200,
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 40),
@@ -44,8 +44,10 @@ class _LauncherState extends State<launcher> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => LoginPage()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()));
                       },
                       child: Text("Login"),
                     ),

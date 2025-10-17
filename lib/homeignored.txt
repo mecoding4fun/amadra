@@ -1,0 +1,315 @@
+import 'package:AMADRA/ViewProfile.dart';
+import 'package:AMADRA/pc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => HomeScreenState();
+}
+
+class HomeScreenState extends State<HomeScreen> {
+  String? community;
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
+  List<String> allCommunities = [];
+  List<String> filteredCommunities = [];
+
+  @override
+  void initState() {
+    super.initState();
+    comms();
+    fetchAllCommunities();
+  }
+
+  // Fetch current user's community
+  Future<void> comms() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        setState(() {
+          community = doc['community'];
+        });
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  // Fetch all distinct communities from users collection
+  Future<void> fetchAllCommunities() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('users').get();
+      final communities = snapshot.docs
+          .map((doc) => (doc.data() as Map<String, dynamic>)['community'] as String?)
+          .whereType<String>()
+          .toSet()
+          .toList(); // remove duplicates
+      setState(() {
+        allCommunities = communities;
+        filteredCommunities = communities;
+      });
+    } catch (e) {
+      print("Error fetching communities: $e");
+    }
+  }
+
+  // Navigate to posts of selected community
+  void openCommunityPosts(String selectedCommunity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CommunityPostsPage(community: selectedCommunity),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: isSearching
+            ? TextField(
+                controller: searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search communities...',
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    filteredCommunities = allCommunities
+                        .where((c) => c.toLowerCase().contains(value.toLowerCase()))
+                        .toList();
+                  });
+                },
+              )
+            : Text("AMADRA", style: Theme.of(context).textTheme.titleLarge),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (isSearching) {
+                  searchController.clear();
+                  filteredCommunities = allCommunities;
+                }
+                isSearching = !isSearching;
+              });
+            },
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreatePostPage()),
+              );
+            },
+            icon: const Icon(Icons.add),
+          ),
+        ],
+      ),
+      body: isSearching
+          ? ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: filteredCommunities.length,
+              itemBuilder: (context, index) {
+                final comm = filteredCommunities[index];
+                return ListTile(
+                  title: Text(comm),
+                  onTap: () {
+                    openCommunityPosts(comm);
+                  },
+                );
+              },
+            )
+          : community == null
+              ? const Center(child: CircularProgressIndicator())
+              : StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('posts')
+                      .where('community', isEqualTo: community)
+                      .orderBy('timestamp', descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                          child: Text("No posts yet",
+                              style: Theme.of(context).textTheme.labelLarge));
+                    }
+
+                    final posts = snapshot.data!.docs;
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await comms();
+                        setState(() {});
+                      },
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: posts.length,
+                        itemBuilder: (context, index) {
+                          final post = posts[index].data() as Map<String, dynamic>;
+                          final userId = post['uid'];
+
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userId)
+                                .get(),
+                            builder: (context, userSnapshot) {
+                              if (!userSnapshot.hasData) {
+                                return const SizedBox.shrink();
+                              }
+                              final userData =
+                                  userSnapshot.data!.data() as Map<String, dynamic>;
+                              final username = userData['username'] ?? 'Unknown User';
+
+                              return Card(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 8),
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ViewProfile(userId: userId),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          username,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        post['heading'] ?? 'No Heading',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  subtitle: Text(post['content'] ?? ''),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
+
+// New page to display posts of a selected community
+class CommunityPostsPage extends StatelessWidget {
+  final String community;
+  const CommunityPostsPage({super.key, required this.community});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(community)),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('posts')
+            .where('community', isEqualTo: community)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No posts yet"));
+          }
+
+          final posts = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index].data() as Map<String, dynamic>;
+              final userId = post['uid'];
+
+              return FutureBuilder<DocumentSnapshot>(
+                future:
+                    FirebaseFirestore.instance.collection('users').doc(userId).get(),
+                builder: (context, userSnapshot) {
+                  if (!userSnapshot.hasData) return const SizedBox.shrink();
+                  final userData =
+                      userSnapshot.data!.data() as Map<String, dynamic>;
+                  final username = userData['username'] ?? 'Unknown User';
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            username,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            post['heading'] ?? 'No Heading',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(post['content'] ?? ''),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}

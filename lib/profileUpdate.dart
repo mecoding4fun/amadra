@@ -17,32 +17,54 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
-  final TextEditingController community = TextEditingController();
 
   String? _profileUrl;
   bool _loading = false;
+
+  List<String> _allCommunities = [];
+  List<String> _selectedCommunities = [];
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _fetchCommunities();
+  }
+
+  Future<void> _fetchCommunities() async {
+    final snapshot = await FirebaseFirestore.instance.collection('communities').get();
+    final communities = snapshot.docs.map((doc) => doc.id).toList();
+    setState(() {
+      _allCommunities = communities;
+      if (!_allCommunities.contains('common')) {
+        _allCommunities.add('common');
+      }
+    });
   }
 
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     final data = doc.data();
     if (data == null) return;
+    final commList = List<String>.from(data['communities'] ?? ['common']);
 
     setState(() {
       _nameController.text = data['name'] ?? '';
       _usernameController.text = data['username'] ?? '';
       _bioController.text = data['bio'] ?? '';
       _profileUrl = data['profilePic'] ?? '';
-      community.text = data['community'];
+      _selectedCommunities = commList.isNotEmpty ? commList : ['common'];
+      if (!_allCommunities.contains('common')) {
+        _allCommunities.add('common');
+      }
+      for (var comm in _selectedCommunities) {
+        if (!_allCommunities.contains(comm)) {
+          _allCommunities.add(comm);
+        }
+      }
     });
   }
 
@@ -80,8 +102,78 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
     }
   }
 
+  Future<void> _addNewCommunity() async {
+    String newCommunity = '';
+    await showDialog(
+      context: context,
+      builder: (context) {
+        final _newCommController = TextEditingController();
+        return AlertDialog(
+          title: Text('Create new community'),
+          content: TextField(
+            controller: _newCommController,
+            decoration: InputDecoration(hintText: 'Community name'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final input = _newCommController.text.trim();
+                if (input.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Community name cannot be empty')));
+                  return;
+                }
+                if (input.length > 150) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Community name cannot exceed 150 characters')));
+                  return;
+                }
+                if (_allCommunities.contains(input)) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Community already exists')));
+                  return;
+                }
+                // Add to Firestore
+                try {
+                  await FirebaseFirestore.instance.collection('communities').doc(input).set({'createdAt': FieldValue.serverTimestamp(),'createdBy':FirebaseAuth.instance.currentUser?.uid});
+                  setState(() {
+                    _allCommunities.add(input);
+                    if (_selectedCommunities.length < 10) {
+                      _selectedCommunities.add(input);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Maximum of 10 communities allowed')));
+                    }
+                  });
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding community')));
+                }
+              },
+              child: Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCommunities.isEmpty) {
+      _selectedCommunities = ['common'];
+    }
+
+    if (!_selectedCommunities.contains('common')) {
+      _selectedCommunities.add('common');
+    }
+
+    if (_selectedCommunities.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You can join up to 10 communities only')));
+      return;
+    }
 
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -90,11 +182,13 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
       'username': _usernameController.text.trim(),
       'bio': _bioController.text.trim(),
       'profilePic': _profileUrl ?? '',
-      'community':community.text.trim()
+      'communities': _selectedCommunities,
     });
 
     Navigator.pop(context);
   }
+
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -116,11 +210,13 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
                       child: CircleAvatar(
                         radius: 60,
                         backgroundColor: Colors.grey[300],
-                        backgroundImage: _profileUrl != null && _profileUrl!.isNotEmpty
-                            ? NetworkImage(_profileUrl!)
-                            : null,
+                        backgroundImage:
+                            _profileUrl != null && _profileUrl!.isNotEmpty
+                                ? NetworkImage(_profileUrl!)
+                                : null,
                         child: _profileUrl == null || _profileUrl!.isEmpty
-                            ? Icon(Icons.account_circle, size: 120, color: Colors.grey[600])
+                            ? Icon(Icons.account_circle,
+                                size: 120, color: Colors.grey[600])
                             : null,
                       ),
                     ),
@@ -129,7 +225,17 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
                       controller: _nameController,
                       decoration: InputDecoration(
                         labelText: 'Name',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue.shade100, width: 2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -143,7 +249,17 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
                       controller: _usernameController,
                       decoration: InputDecoration(
                         labelText: 'Username',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue.shade100, width: 2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -158,7 +274,17 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
                       maxLines: 3,
                       decoration: InputDecoration(
                         labelText: 'Bio (optional)',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue.shade100, width: 2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                        ),
                       ),
                       validator: (value) {
                         if (value != null && value.length > 150) {
@@ -168,24 +294,59 @@ class _ProfileUpdateState extends State<ProfileUpdate> {
                       },
                     ),
                     SizedBox(height: 12),
-                    TextFormField(
-                      controller: community,
-                      decoration: InputDecoration(
-                        labelText: 'Community (optional) default: common',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value != null && value.length > 150) {
-                          return 'community name cannot exceed 150 characters';
-                        }
-                        return null;
-                      },
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Communities (select up to 10)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        ..._allCommunities.map((comm) {
+                          final selected = _selectedCommunities.contains(comm);
+                          return FilterChip(
+                            label: Text(comm),
+                            selected: selected,
+                            selectedColor: Colors.blue.shade100,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(color: Colors.blue)
+                            ),
+                            onSelected: (bool value) {
+                              setState(() {
+                                if (value) {
+                                  if (_selectedCommunities.length < 10) {
+                                    _selectedCommunities.add(comm);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Maximum of 10 communities allowed')));
+                                  }
+                                } else {
+                                  if (comm == 'common') return;
+                                  _selectedCommunities.remove(comm);
+                                }
+                                if (_selectedCommunities.isEmpty) {
+                                  _selectedCommunities.add('common');
+                                }
+                              });
+                            },
+                          );
+                        }),
+                        ActionChip(
+                          label: Text('+ Create new community'),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)
+                            ),
+                          onPressed: _addNewCommunity,
+                        ),
+                      ],
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _saveProfile,
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                         child: Text('Save', style: TextStyle(fontSize: 16)),
                       ),
                     ),

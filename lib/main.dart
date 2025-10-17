@@ -10,6 +10,7 @@ import 'firebase_options.dart';
 import 'Home.dart';
 import 'profile.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'splash_screen.dart'; // ✅ your splash screen file
 
 Future<void> saveDeviceToken(String uid) async {
   final fcm = FirebaseMessaging.instance;
@@ -20,7 +21,6 @@ Future<void> saveDeviceToken(String uid) async {
     }, SetOptions(merge: true));
   }
 
-  // Keep Firestore updated when token refreshes
   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
     await FirebaseFirestore.instance.collection('users').doc(uid).set({
       'fcmToken': newToken,
@@ -34,18 +34,11 @@ Future<void> main() async {
 
   await supabaseLib.Supabase.initialize(
     url: 'https://vgwllhhomzbgolazgaba.supabase.co',
-    anonKey: 'your-anon-key-here',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnd2xsaGhvbXpiZ29sYXpnYWJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNzEwNzYsImV4cCI6MjA3NDY0NzA3Nn0.L6MuBFc_aEUujg-yLZePd6S1zD7-w1bypma0YZBLyjA',
   );
 
-  final fcm = FirebaseMessaging.instance;
-
-  // Ask permissions (especially on iOS)
-  await fcm.requestPermission();
-
-  // Local notifications setup
-
-
-
+  await FirebaseMessaging.instance.requestPermission();
 
   runApp(const MyApp());
 }
@@ -60,19 +53,36 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: const ColorScheme.light(
+          primary: Colors.deepPurple,
+          surface: Colors.white,
+          onPrimary: Colors.black,
+          onSurface: Colors.black,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.deepPurple,
+          unselectedItemColor: Colors.grey,
+        ),
         fontFamily: 'Lato',
         textTheme: TextTheme(
-          bodyMedium: TextStyle(fontFamily: 'Lato', fontSize: 16),
-          bodySmall: TextStyle(fontFamily: 'RobotoCondensed', fontSize: 14),
-          titleLarge: TextStyle(
-              fontFamily: 'Montserrat', fontSize: 24, fontWeight: FontWeight.bold),
-          titleMedium: TextStyle(
+          bodyMedium: const TextStyle(fontFamily: 'Lato', fontSize: 16),
+          bodySmall:
+              const TextStyle(fontFamily: 'RobotoCondensed', fontSize: 14),
+          titleLarge: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 24,
+              fontWeight: FontWeight.bold),
+          titleMedium: const TextStyle(
               fontFamily: 'Raleway', fontSize: 20, fontWeight: FontWeight.w600),
-          labelLarge: TextStyle(fontFamily: 'ZalandoSans', fontSize: 16),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-              textStyle: TextStyle(fontFamily: 'RobotoCondensed', fontSize: 16)),
+          labelLarge: const TextStyle(fontFamily: 'ZalandoSans', fontSize: 16),
+          labelSmall: TextStyle(color: Colors.grey[600], fontSize: 14),
         ),
       ),
       darkTheme: ThemeData(
@@ -85,7 +95,9 @@ class MyApp extends StatelessWidget {
           bodyMedium:
               TextStyle(fontFamily: 'Lato', fontSize: 16, color: Colors.white),
           bodySmall: TextStyle(
-              fontFamily: 'RobotoCondensed', fontSize: 14, color: Colors.white70),
+              fontFamily: 'RobotoCondensed',
+              fontSize: 14,
+              color: Colors.white70),
           titleLarge: TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 24,
@@ -96,25 +108,12 @@ class MyApp extends StatelessWidget {
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: Colors.white),
-          labelLarge:
-              TextStyle(fontFamily: 'ZalandoSans', fontSize: 16, color: Colors.white70),
+          labelLarge: TextStyle(
+              fontFamily: 'ZalandoSans', fontSize: 16, color: Colors.white70),
         ),
       ),
       themeMode: ThemeMode.light,
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          }
-          if (snapshot.hasData) {
-            // ✅ Save device token whenever user logs in
-            saveDeviceToken(snapshot.data!.uid);
-            return BottomAppDem();
-          }
-          return launcher();
-        },
-      ),
+      home: SplashScreen(),
     );
   }
 }
@@ -139,9 +138,15 @@ class BottomAppDemState extends State<BottomAppDem> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: ind,
         onTap: ontap,
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.black,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.black), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle, color: Colors.black), label: "Profile"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle), label: "Profile"),
         ],
       ),
     );
