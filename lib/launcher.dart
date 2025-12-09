@@ -1,64 +1,77 @@
+import 'package:flutter/material.dart';
 import 'package:AMADRA/login.dart';
 import 'package:AMADRA/signup.dart';
-import 'package:flutter/material.dart';
 
-void main() {
-  runApp(
-    MaterialApp(
-      home: launcher(),
-    ),
-  );
-}
-
-class launcher extends StatefulWidget {
-  @override
-  State<launcher> createState() => _LauncherState();
-}
-
-class _LauncherState extends State<launcher> {
+class Launcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/amadra.png',
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => SignUp()));
-                      },
-                      child: Text("Sign Up"),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFBBDEFB), 
+              Color(0xFF90CAF9), 
+              Color(0xFF64B5F6), 
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/amadra.png', height: 320, width: 320,),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => SignUp()));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginPage()));
-                      },
-                      child: Text("Login"),
+                    child: const Text("Sign Up"),
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => LoginPage()));
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 60),
-              ],
+                    child: const Text("Login"),
+                  ),
+                  const SizedBox(height: 30),
+                  const Text(
+                    'Connect. Share. Inspire.',
+                    style: TextStyle(
+                      color: Color(0xFF1565C0),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
+      )
     );
   }
 }

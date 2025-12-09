@@ -1,4 +1,3 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables
 
 import 'package:AMADRA/launcher.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,7 @@ import 'firebase_options.dart';
 import 'Home.dart';
 import 'profile.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'splash_screen.dart'; // ✅ your splash screen file
+import 'splash_screen.dart'; 
 
 Future<void> saveDeviceToken(String uid) async {
   final fcm = FirebaseMessaging.instance;
@@ -28,14 +27,28 @@ Future<void> saveDeviceToken(String uid) async {
   });
 }
 
+Future<String?> getImage() async {
+  final docSnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .get();
+
+  if (docSnapshot.exists) {
+    return docSnapshot.data()?['profilePic'] as String?;
+  } else {
+    return null;
+  }
+}
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await supabaseLib.Supabase.initialize(
-    url: 'https://vgwllhhomzbgolazgaba.supabase.co',
+    url: 'SUPABASEURL',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnd2xsaGhvbXpiZ29sYXpnYWJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNzEwNzYsImV4cCI6MjA3NDY0NzA3Nn0.L6MuBFc_aEUujg-yLZePd6S1zD7-w1bypma0YZBLyjA',
+        'SUPABASEANON',
   );
 
   await FirebaseMessaging.instance.requestPermission();
@@ -48,7 +61,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "AMADRA",
+      // title: "AMADRA",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -124,6 +137,7 @@ class BottomAppDem extends StatefulWidget {
 }
 
 class BottomAppDemState extends State<BottomAppDem> {
+  String imageUrl="";
   int ind = 0;
   final List<Widget> pages = [HomeScreen(), Profile()];
 
@@ -136,17 +150,39 @@ class BottomAppDemState extends State<BottomAppDem> {
     return Scaffold(
       body: pages[ind],
       bottomNavigationBar: BottomNavigationBar(
+        // backgroundColor: Color(0xFF64B5F6),
         currentIndex: ind,
         onTap: ontap,
-        selectedItemColor: Colors.deepPurple,
+        selectedItemColor: Colors.deepPurple.shade400,
         unselectedItemColor: Colors.black,
-        items: const [
+        items:  [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "Home",
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: "Profile"),
+            icon: FutureBuilder<String?>(
+              future: getImage(), 
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Icon(Icons.account_circle, size: 30);
+                } else if (snapshot.hasError || snapshot.data == null || snapshot.data!.isEmpty||snapshot.data=="") {
+                  return Icon(Icons.account_circle, size: 30);
+                } else {
+                  return ClipOval(
+                    child: Image.network(
+                      snapshot.data!,
+                      width: 30,
+                      height: 30,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.account_circle, size: 30),
+                    ),
+                  );
+                }
+              },
+            ),
+            label: "Profile",
+          )
         ],
       ),
     );

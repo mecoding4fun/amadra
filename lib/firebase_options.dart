@@ -60,11 +60,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD9H8qVa-YwgcEy2PQp3DU4-eO9hGJmX7o',
-    appId: '1:276745983249:ios:495d8ac1eb166ca25528b0',
+    appId: '1:276745983249:ios:5138d233de94e6b65528b0',
     messagingSenderId: '276745983249',
     projectId: 'databasehandler-e2f44',
     storageBucket: 'databasehandler-e2f44.firebasestorage.app',
-    iosBundleId: 'com.example.flutterApplication2',
+    iosBundleId: 'com.ram.blog',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'databasehandler-e2f44.firebasestorage.app',
     measurementId: 'G-YQR233GP3N',
   );
+
 }

@@ -1,0 +1,15 @@
+AMADRA – Minimal Beta Launch (v0.1)
+
+What’s New:
+
+Create and share posts with images
+Like and comment on posts
+Upload and view profile pictures
+Browse posts from communities and users
+Smooth image caching for faster loading
+Clean, modern UI with intuitive navigation
+Known Limitations:
+
+Offline mode not fully supported
+Minor layout adjustments may be needed on some devices
+Beta testers may encounter rare crashes with image uploads

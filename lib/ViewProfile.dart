@@ -1,6 +1,8 @@
 import 'package:AMADRA/components/post_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:AMADRA/components/PostCard.dart';
+
 
 class UserData {
   final String username;
@@ -19,18 +21,22 @@ class UserData {
 }
 
 class PostsData {
+  final String id;
   final String heading;
   final String content;
   final String username;
   final Timestamp timestamp;
   final String community;
+  final String? imageUrl;
 
   PostsData({
+    required this.id,
     required this.heading,
     required this.username,
     required this.content,
     required this.timestamp,
     required this.community,
+    this.imageUrl,
   });
 }
 
@@ -69,11 +75,14 @@ Future<ProfileData> fetchUserProfileAndPosts(String userId) async {
   final posts = querySnapshot.docs.map((doc) {
     final data = doc.data();
     return PostsData(
-        heading: data['heading'] ?? "",
-        username: data['username'] ?? "",
-        content: data['content'] ?? "",
-        timestamp: data['timestamp'] ?? Timestamp.now(),
-        community: data['community']);
+      id: doc.id,
+      heading: data['heading'] ?? "",
+      username: data['username'] ?? "",
+      content: data['content'] ?? "",
+      timestamp: data['timestamp'] ?? Timestamp.now(),
+      community: data['community'] ?? 'common',
+      imageUrl: data['imageUrl'] ?? '',
+    );
   }).toList();
 
   return ProfileData(user: user, posts: posts);
@@ -115,7 +124,7 @@ class ViewProfile extends StatelessWidget {
         child: GestureDetector(
           onTap: () => Navigator.of(context).pop(), 
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(1000),
             child: Image.network(
                 imageUrl,
                 fit: BoxFit.contain,
@@ -233,30 +242,35 @@ class ViewProfile extends StatelessWidget {
                 );
               }
 
-              final post = posts[index - 1];
+              final postData = posts[index - 1];
+
+              final postMap = {
+                'id': postData.id,
+                'heading': postData.heading,
+                'username': postData.username,
+                'content': postData.content,
+                'timestamp': postData.timestamp,
+                'community': postData.community,
+                'imageUrl': postData.imageUrl ?? '',
+              };
+              final userMap = {
+                'username': user.username,
+                'name': user.name,
+                'bio': user.bio,
+                'profilePic': user.profilePic,
+                'communities': user.communities,
+              };
+              final imageUrl = postData.imageUrl ?? '';
               return GestureDetector(
                 onTap: () {
-                  final postMap = {
-                    'heading': post.heading,
-                    'username': post.username,
-                    'content': post.content,
-                    'timestamp': post.timestamp,
-                    'community': post.community
-                  };
-                  final userMap = {
-                    'username': user.username,
-                    'name': user.name,
-                    'bio': user.bio,
-                    'profilePic': user.profilePic,
-                    'communities': user.communities,
-                  };
                   showDialog(
                     context: context,
                     builder: (context) => PostPopup(
+                      postId: postData.id, 
                       post: postMap,
                       userData: userMap,
                       userId: userId,
-                      formattedTime: formatTimestamp(post.timestamp),
+                      formattedTime: formatTimestamp(postData.timestamp),
                     ),
                   );
                 },
@@ -266,21 +280,64 @@ class ViewProfile extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: ListTile(
-                    title: Text(post.heading,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Column(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          postData.heading,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
                         const SizedBox(height: 4),
-                        Text(post.content),
+                        Text(postData.content),
+                        if (imageUrl.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              imageUrl,
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  height: 200,
+                                  color: Colors.grey[200],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 200,
+                                color: Colors.grey[300],
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.broken_image, color: Colors.grey),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Text(
+                            formatTimestamp(postData.timestamp),
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
+       
               );
             },
+            
           );
         },
       ),

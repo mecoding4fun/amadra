@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.flutterApplication2</string>
+	<string>com.ram.blog</string>
 	<key>PROJECT_ID</key>
 	<string>databasehandler-e2f44</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:276745983249:ios:495d8ac1eb166ca25528b0</string>
+	<string>1:276745983249:ios:5138d233de94e6b65528b0</string>
 </dict>
 </plist>

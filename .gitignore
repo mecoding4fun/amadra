@@ -1,43 +1,47 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ---------- FLUTTER BUILD FILES ----------
 .dart_tool/
+.packages
 .flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
+.melos_tool/
+build/
+pubspec.lock
 
-# Symbolication related
-app.*.symbols
+# ---------- PLATFORM SPECIFIC ----------
+# Android
+android/.gradle/
+android/captures/
+android/app/build/
+android/local.properties
+android/key.properties
 
-# Obfuscation related
-app.*.map.json
+# iOS
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/build/
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# ---------- FIREBASE SENSITIVE FILES ----------
+# DO NOT PUSH THESE
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# ---------- SUPABASE / ENV KEYS ----------
+*.env
+*.env.*
+*.secret.json
+supabase/config.toml
+
+# ---------- EDITORS / SYSTEM JUNK ----------
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.swp
+*.tmp
+
+# ---------- LOGS ----------
+*.log
+
+# ---------- OTHER COMMON EXCLUDES ----------
+coverage/

@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => launcher()),
+        MaterialPageRoute(builder: (context) => Launcher()),
       );
     }
   }
@@ -49,30 +49,31 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Replace with your actual app logo asset
-            Image.asset(
-              'assets/amadra.png',
-              height: 240,
-              width: 240,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "AMADRA",
-              style: TextStyle(
-                color: Color.fromARGB(255, 0, 0, 0),
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Raleway',
-                letterSpacing: 1.2,
+      body: Container(
+        decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFBBDEFB), 
+                    Color(0xFF90CAF9), 
+                    Color(0xFF64B5F6), 
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ), 
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/amadra.png',
+                height: 360,
+                width: 360,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }

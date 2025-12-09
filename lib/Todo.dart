@@ -55,7 +55,7 @@ class TodoScreenState extends State<TodoScreen> {
         todoc.clear();
         priority = "Low";
       });
-      saveTodos(); // save after adding
+      saveTodos(); 
     }
   }
 
@@ -63,14 +63,14 @@ class TodoScreenState extends State<TodoScreen> {
     setState(() {
       todos[index]["done"] = !todos[index]["done"];
     });
-    saveTodos(); // save after update
+    saveTodos();
   }
 
   void deleteTodo(int index) {
     setState(() {
       todos.removeAt(index);
     });
-    saveTodos(); // save after delete
+    saveTodos();
   }
 
   @override
