@@ -25,6 +25,7 @@ ios/build/
 # DO NOT PUSH THESE
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
 
 # ---------- SUPABASE / ENV KEYS ----------
 *.env
