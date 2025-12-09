@@ -29,7 +29,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   String getProfilePicUrl(String uid) {
-    return 'https://vgwllhhomzbgolazgaba.supabase.co/storage/v1/object/public/profile_pics/$uid/profile.jpg';
+    return 'https://xxxxxxxxxxx.supabase.co/storage/v1/object/public/profile_pics/$uid/profile.jpg';
   }
 
   Future<Map<String, dynamic>> getUserData(String uid) async {
