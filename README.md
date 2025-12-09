@@ -202,6 +202,6 @@ flutter build appbundle
 
 👤 Author
 
-Built by Ramachandran 
-GitHub: https://github.com/mecoding4fun
-Portfolio: https://mecoding4fun.com
+Built by **Ramachandran S**
+- **GitHub**: https://github.com/mecoding4fun
+- **Portfolio**: https://mecoding4fun.com
