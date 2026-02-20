@@ -37,21 +37,43 @@ The app expects a backend (Firebase + Supabase) configuration. Replace the place
 ```text
 amadra/
 │── README.md
-│── .gitignore
+│── LICENSE
 │── pubspec.yaml
+│── pubspec.lock
+│── .gitignore
+│── firebase.json
 │
-└── mobile_app/
-    ├── lib/
-    │   ├── main.dart
-    │   ├── src/
-    │   │   ├── screens/
-    │   │   ├── widgets/
-    │   │   ├── services/     # API, auth, storage helpers
-    │   │   └── models/
-    │   └── ...
-    ├── android/
-    ├── ios/
-    └── assets/
+├── assets/
+│   ├── icons/
+│   ├── images/
+│   └── others/
+│
+├── lib/
+│   ├── main.dart
+│   ├── firebase_options.dart    
+│   ├── components/                  # UI building blocks
+│   │   ├── PostCard.dart
+│   │   ├── Comments.dart
+│   │   ├── Likes.dart
+│   │   ├── post_popup.dart
+│   ├── splash_screen.dart
+│   ├── login.dart
+│   ├── signup.dart
+│   ├── Home.dart
+│   ├── launcher.dart
+│   ├── NotificationsPage.dart
+│   ├── profile.dart
+│   ├── profileUpdate.dart
+│   └── ViewProfile.dart
+│   
+├── android/
+│── ios/
+│── macos/
+│── linux/
+│── functions/       
+│── build/
+│── .dart_tool/
+│── .idea/
 ```
 ## 🔧 Local Setup (Development)
 
@@ -180,6 +202,6 @@ flutter build appbundle
 
 👤 Author
 
-Built by Ramachandran 
-GitHub: https://github.com/mecoding4fun
-Portfolio: https://mecoding4fun.com
+Built by **Ramachandran S**
+- **GitHub**: https://github.com/mecoding4fun
+- **Portfolio**: https://mecoding4fun.com
