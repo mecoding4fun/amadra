@@ -46,9 +46,9 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await supabaseLib.Supabase.initialize(
-    url: 'SUPABASEURL',
+    url: 'https://vgwllhhomzbgolazgaba.supabase.co',
     anonKey:
-        'SUPABASEANON',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnd2xsaGhvbXpiZ29sYXpnYWJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNzEwNzYsImV4cCI6MjA3NDY0NzA3Nn0.L6MuBFc_aEUujg-yLZePd6S1zD7-w1bypma0YZBLyjA',
   );
 
   await FirebaseMessaging.instance.requestPermission();
