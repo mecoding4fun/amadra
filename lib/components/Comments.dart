@@ -67,7 +67,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
   }
 
   String getProfilePicUrl(String uid) {
-    return 'https://vgwllhhomzbgolazgaba.supabase.co/storage/v1/object/public/profile_pics/$uid/profile.jpg';
+    return 'https://supabseurl.supabase.co/storage/v1/object/public/profile_pics/$uid/profile.jpg';
   }
 
   @override
