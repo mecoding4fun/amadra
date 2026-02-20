@@ -5,7 +5,7 @@ class LikesSheet extends StatelessWidget {
   final List<String> likedBy;
   const LikesSheet({super.key, required this.likedBy});
 
-  String getProfilePicUrl(String uid) => 'https://vgwllhhomzbgolazgaba.supabase.co/storage/v1/object/public/profile_pics/$uid/profile.jpg';
+  String getProfilePicUrl(String uid) => 'https://supabaseurl/storage/v1/object/public/profile_pics/$uid/profile.jpg';
 
   Future<Map<String, dynamic>> getUserData(String uid) async {
     final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
